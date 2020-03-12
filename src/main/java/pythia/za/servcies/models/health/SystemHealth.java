@@ -1,4 +1,4 @@
-package pythia.za.servcies.models;
+package pythia.za.servcies.models.health;
 
 import java.io.Serializable;
 
