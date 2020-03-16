@@ -3,10 +3,7 @@ package pythia.za.servcies.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pythia.za.servcies.models.profile.Profile;
 import pythia.za.servcies.models.profile.ProfileIdNotValidException;
 import pythia.za.servcies.models.profile.ProfileNotFoundException;
@@ -19,11 +16,13 @@ public class ProfileController {
     private ProfileServices profileServices;
 
     @RequestMapping(value = "/profile/", method = RequestMethod.GET, produces = "application/json")
+    @CrossOrigin
     public ResponseEntity getAllProfiles() {
         return new ResponseEntity(profileServices.getAllProfiles(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/profile/{id}", method = RequestMethod.GET, produces = "application/json")
+    @CrossOrigin
     public ResponseEntity getProfile(@PathVariable("id") String id ) {
         try {
             return new ResponseEntity(profileServices.getProfile(id), HttpStatus.OK);
