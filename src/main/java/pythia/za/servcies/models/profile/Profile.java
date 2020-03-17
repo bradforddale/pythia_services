@@ -1,48 +1,61 @@
 package pythia.za.servcies.models.profile;
 
+import pythia.za.servcies.models.NewProfileRequest;
+
 import java.util.ArrayList;
 import java.util.UUID;
 
 public class Profile {
     private String id;
-    private ArrayList<AwardAchieved> awardAchieveds;
+    private ArrayList<AwardAchieved> awardsAchieved;
     private ArrayList<Position> positions;
     private PersonalInfo personalInfo;
 
     public Profile() {
-        this.id = UUID.randomUUID().toString();;
-        this.awardAchieveds = new ArrayList<AwardAchieved>();
+        this.id = generateId();
+        this.awardsAchieved = new ArrayList<AwardAchieved>();
         this.positions = new ArrayList<Position>();
         this.personalInfo = new PersonalInfo();
     }
 
     public Profile(String id) {
         this.id = id;
-        this.awardAchieveds = new ArrayList<AwardAchieved>();
+        this.awardsAchieved = new ArrayList<AwardAchieved>();
         this.positions = new ArrayList<Position>();
         this.personalInfo = new PersonalInfo();
     }
 
     public Profile(String id, PersonalInfo pi) {
         this.id = id;
-        this.awardAchieveds = new ArrayList<AwardAchieved>();
+        this.awardsAchieved = new ArrayList<AwardAchieved>();
         this.positions = new ArrayList<Position>();
         this.personalInfo = pi;
     }
 
-    public Profile(String id, ArrayList<AwardAchieved> awardAchieveds, ArrayList<Position> positions, PersonalInfo personalInfo) {
+    public Profile(String id, ArrayList<AwardAchieved> awardsAchieved, ArrayList<Position> positions, PersonalInfo personalInfo) {
         this.id = id;
-        this.awardAchieveds = awardAchieveds;
+        this.awardsAchieved = awardsAchieved;
         this.positions = positions;
         this.personalInfo = personalInfo;
     }
 
-    public ArrayList<AwardAchieved> getAwardAchieveds() {
-        return awardAchieveds;
+    public Profile(NewProfileRequest newProfileRequest) {
+        this.id = generateId();
+        this.personalInfo = new PersonalInfo(newProfileRequest.getFullname(), newProfileRequest.getCell(), newProfileRequest.getEmail());
+        this.awardsAchieved = new ArrayList<AwardAchieved>();
+        this.positions = new ArrayList<Position>();
+    }
+
+    private String generateId() {
+        return UUID.randomUUID().toString();
+    }
+
+    public ArrayList<AwardAchieved> getawardsAchieved() {
+        return awardsAchieved;
     }
 
     public void addAwardAchieved(AwardAchieved a) {
-        this.awardAchieveds.add(a);
+        this.awardsAchieved.add(a);
     }
 
     public ArrayList<Position> getPositions() {
@@ -73,7 +86,7 @@ public class Profile {
     public String toString() {
         return "Profile{" +
                 "id='" + id + '\'' +
-                ", awardAchieveds=" + awardAchieveds +
+                ", awardsAchieved=" + awardsAchieved +
                 ", positions=" + positions +
                 ", personalInfo=" + personalInfo +
                 '}';
