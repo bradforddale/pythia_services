@@ -47,4 +47,10 @@ public class ProfileServices {
     private boolean validateProfileId (String id) {
         return !id.isEmpty();
     }
+
+    public MessageResponse deleteProfile(String id) throws ProfileNotFoundException, ProfileIdNotValidException {
+        getProfile(id);
+        profileRepo.delete(id);
+        return new MessageResponse("Profile with id " + id + " was deleted");
+    }
 }

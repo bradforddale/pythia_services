@@ -56,4 +56,16 @@ public class ProfileController {
             return new ResponseEntity(new MessageResponse(pv), HttpStatus.BAD_REQUEST);
         }
     }
+
+    @RequestMapping(value = "/profile/{id}", method = RequestMethod.DELETE, consumes = "application/json", produces = "application/json")
+    @CrossOrigin
+    public ResponseEntity deleteProfile(@PathVariable("id") String id) {
+        try {
+            return new ResponseEntity(profileServices.deleteProfile(id), HttpStatus.OK);
+        } catch (ProfileNotFoundException pe) {
+            return new ResponseEntity(new MessageResponse(pe), HttpStatus.NOT_FOUND);
+        } catch (ProfileIdNotValidException pv) {
+            return new ResponseEntity(new MessageResponse(pv), HttpStatus.BAD_REQUEST);
+        }
+    }
 }

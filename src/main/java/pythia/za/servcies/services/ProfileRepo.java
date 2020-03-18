@@ -37,9 +37,7 @@ public class ProfileRepo {
 
     public Profile get(String id) throws ProfileNotFoundException{
         for (Profile p: profiles) {
-            System.out.println(p);
             if (p.equals(id)) {
-                System.out.println("Found the right profile");
                 return p;
             }
         }
