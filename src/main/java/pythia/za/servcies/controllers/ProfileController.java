@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pythia.za.servcies.models.MessageResponse;
 import pythia.za.servcies.models.NewProfileRequest;
+import pythia.za.servcies.models.profile.Profile;
 import pythia.za.servcies.models.profile.ProfileIdNotValidException;
 import pythia.za.servcies.models.profile.ProfileNotFoundException;
 import pythia.za.servcies.services.ProfileServices;
@@ -37,6 +38,18 @@ public class ProfileController {
     public ResponseEntity getProfile(@PathVariable("id") String id ) {
         try {
             return new ResponseEntity(profileServices.getProfile(id), HttpStatus.OK);
+        } catch (ProfileNotFoundException pe) {
+            return new ResponseEntity(new MessageResponse(pe), HttpStatus.NOT_FOUND);
+        } catch (ProfileIdNotValidException pv) {
+            return new ResponseEntity(new MessageResponse(pv), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(value = "/profile/{id}", method = RequestMethod.PUT, consumes = "application/json", produces = "application/json")
+    @CrossOrigin
+    public ResponseEntity updateProfile(@PathVariable("id") String id, @RequestBody Profile updatedProfile) {
+        try {
+            return new ResponseEntity(profileServices.updateProfile(id, updatedProfile), HttpStatus.OK);
         } catch (ProfileNotFoundException pe) {
             return new ResponseEntity(new MessageResponse(pe), HttpStatus.NOT_FOUND);
         } catch (ProfileIdNotValidException pv) {

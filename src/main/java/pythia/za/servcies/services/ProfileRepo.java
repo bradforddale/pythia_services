@@ -5,6 +5,7 @@ import pythia.za.servcies.models.profile.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.function.Predicate;
 
 //TODO This should be an actual database with services that exist as a seperate microservice
 @Repository
@@ -38,14 +39,23 @@ public class ProfileRepo {
         for (Profile p: profiles) {
             System.out.println(p);
             if (p.equals(id)) {
-                System.out.println("Foudn the right profile");
+                System.out.println("Found the right profile");
                 return p;
             }
         }
         throw new ProfileNotFoundException(id);
     }
 
-    public void delete(String profileId) {
+    public void update(String id, Profile updatedProfile) {
+        this.delete(id);
+        this.add(updatedProfile);
+    }
 
+    public void delete(String profileId) {
+        this.profiles.removeIf(createSameIdPredicate(profileId));
+    }
+
+    private Predicate<Profile> createSameIdPredicate(String profileId) {
+        return (Profile profile) -> profile.getId().equalsIgnoreCase(profileId);
     }
 }

@@ -34,6 +34,16 @@ public class ProfileServices {
         return new MessageResponse("Profile created with id " + newProfile.getId());
     }
 
+    public MessageResponse updateProfile(String id, Profile updatedProfile) throws ProfileIdNotValidException, ProfileNotFoundException {
+        Profile currentProfile = this.getProfile(id);
+        if (currentProfile != null && id.equalsIgnoreCase(updatedProfile.getId()) && currentProfile.getId().equalsIgnoreCase(updatedProfile.getId())) {
+            profileRepo.update(id, updatedProfile);
+            return new MessageResponse("Profile with id " + id + " was updated");
+        } else {
+            throw new ProfileIdNotValidException("Profile with id " + id + " is invalid" + updatedProfile);
+        }
+    }
+
     private boolean validateProfileId (String id) {
         return !id.isEmpty();
     }
