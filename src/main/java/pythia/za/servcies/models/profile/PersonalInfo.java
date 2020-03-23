@@ -1,6 +1,7 @@
 package pythia.za.servcies.models.profile;
 
 public class PersonalInfo {
+
     private String fullname;
     private String cell;
     private String email;

@@ -16,8 +16,12 @@ public class ProfileServices {
     @Autowired
     private ProfileRepo profileRepo;
 
+    @Autowired
+    private ProfileDataIntegration profileDataIntegration;
+
     public Profile[] getAllProfiles() {
-        return profileRepo.getAll().toArray(new Profile[0]) ;
+        return profileDataIntegration.getAll().toArray(new Profile[0]);
+//        return profileRepo.getAll().toArray(new Profile[0]) ;
     }
 
     public Profile getProfile(String id) throws ProfileNotFoundException, ProfileIdNotValidException {

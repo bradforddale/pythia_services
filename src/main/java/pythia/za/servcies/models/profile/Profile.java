@@ -1,5 +1,7 @@
 package pythia.za.servcies.models.profile;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import pythia.za.servcies.models.NewProfileRequest;
 
 import java.util.ArrayList;

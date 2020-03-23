@@ -3,12 +3,15 @@ package pythia.za.servcies.models.profile;
 import java.time.LocalDateTime;
 
 public class Position {
+    private String id;
     private ClubPosition clubPosition;
     private String club;
     private LocalDateTime dateStarted;
     private LocalDateTime dateEnded;
 
-    public Position(ClubPosition clubPosition, String club, LocalDateTime dateStarted, LocalDateTime dateEnded) {
+
+    public Position(String id, ClubPosition clubPosition, String club, LocalDateTime dateStarted, LocalDateTime dateEnded) {
+        this.id = id;
         this.clubPosition = clubPosition;
         this.club = club;
         this.dateStarted = dateStarted;
