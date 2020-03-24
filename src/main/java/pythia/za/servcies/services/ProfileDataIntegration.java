@@ -3,7 +3,6 @@ package pythia.za.servcies.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -14,71 +13,32 @@ import pythia.za.servcies.models.InvalidClubPosition;
 import pythia.za.servcies.models.profile.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class ProfileDataIntegration {
-    public List<Profile> getAll() {
+    private final String PROFILES_URL = "http://localhost:8090/profiles/";
+
+    private HttpEntity<String> restRequest(DataRequest body) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        DataRequest<Profile> dataRequest = new DataRequest<Profile>("getAll", null);
-        HttpEntity<String> request = new HttpEntity<>(dataRequest.toString(), headers);
-        System.out.println("Request is: " + request.toString());
+        return new HttpEntity<String>(body.toString(), headers);
+    }
 
-        RestTemplate restTemplate = new RestTemplate();
+    private ResponseEntity post(String url, HttpEntity<String> request) {
+        return (new RestTemplate()).postForEntity(url, request, String.class);
+    }
 
-        ResponseEntity  responseEntity = restTemplate.postForEntity("http://localhost:8090/profiles/", request, String.class);
-//        System.out.println(responseEntity);
-        ArrayList<Profile> profiles = new ArrayList<>();
-        ObjectMapper mapper = new ObjectMapper();
+    public List<Profile> getAll() {
+        ResponseEntity  responseEntity = post(PROFILES_URL,restRequest( new DataRequest<Profile>("getAll", null)));
+        System.out.println(responseEntity.getStatusCode());
+        List<Profile> profiles = new ArrayList<>();
         try {
-            JsonNode actualObj = mapper.readTree((String)responseEntity.getBody());
-            System.out.println("JSON obj " +  actualObj);
-            System.out.println("JSON root " + actualObj.size());
-            System.out.println("JSON root " + actualObj.getClass().getName());
-
-//            DateTimeFormatter fmt = new DateTimeFormat();
-
-            for (int i = 0; i < actualObj.size(); i++) {
-
-                System.out.println(actualObj.get(i).path("id").textValue());
-                System.out.println(actualObj.get(i).path("personalInfo").path("fullname").textValue());
-                System.out.println(actualObj.get(i).at("/personalInfo/fullname").textValue());
-                Profile p = new Profile(actualObj.get(i).path("id").textValue(),
-                                        new PersonalInfo(actualObj.get(i).at("/personalInfo/fullname").textValue(),
-                                                actualObj.get(i).at("/personalInfo/cell").textValue(),
-                                                actualObj.get(i).at("/personalInfo/email").textValue()));
-                JsonNode awardsAchievedJson = actualObj.get(i).at("/awardsAchieved");
-                System.out.println(awardsAchievedJson.size());
-                for (int j = 0 ; j < awardsAchievedJson.size(); j++) {
-                    AwardAchieved a = new AwardAchieved(awardsAchievedJson.get(j).at("/id").textValue(),
-                            awardsAchievedJson.get(j).at("/description").textValue(),
-                            LocalDate.parse(awardsAchievedJson.get(j).at("/dateAchieved").textValue(), DateTimeFormatter.ofPattern("yyyy/MM/d")).atStartOfDay());
-                    System.out.println(a);
-                    p.addAwardAchieved(a);
-                }
-                JsonNode positionsJson = actualObj.get(i).at("/positions");
-                for (int j = 0 ; j < positionsJson.size(); j++) {
-                    Position po = new Position(positionsJson.get(j).at("/id").textValue(),
-                            ClubPosition.of(positionsJson.get(j).at("/clubPosition").textValue()),
-                            positionsJson.get(j).at("/club").textValue(),
-                            LocalDate.parse(positionsJson.get(j).at("/dateStarted").textValue(), DateTimeFormatter.ofPattern("yyyy/MM/d")).atStartOfDay(),
-                            LocalDate.parse(positionsJson.get(j).at("/dateEnded").textValue(), DateTimeFormatter.ofPattern("yyyy/MM/d")).atStartOfDay());
-                    System.out.println(po);
-                    p.addPosition(po);
-                }
-                System.out.println(p);
-                profiles.add(p);
-
-            }
-
-//            Profile[] toValue = mapper.treeToValue(actualObj, Profile[].class);
+//            TODO Needs some excpetion handling code
+            JsonNode responseJson = (new ObjectMapper()).readTree((String)responseEntity.getBody());
+            profiles = successfulResults(responseJson);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (InvalidClubPosition invalidClubPosition) {
@@ -87,7 +47,47 @@ public class ProfileDataIntegration {
         return profiles;
     }
 
-//    private Object getJSONProperty(JsonNode json, String... path) {
-//        actualObj.get(i).path("personalInfo").path("fullname")
-//    }
+    private List<Profile> successfulResults(JsonNode responseJson) throws JsonProcessingException, InvalidClubPosition {
+        List<Profile> profiles = new ArrayList<>();
+        JsonNode resultJson = (new ObjectMapper()).readTree(responseJson.at("/result").textValue());
+        for (int i = 0; i < resultJson.size(); i++) {
+            JsonNode currentNode = resultJson.get(i);
+            Profile p = parseProfileJson(currentNode);
+            addAwardsAcheivedToProfile(currentNode, p);
+            addPositionsToProfile(currentNode, p);
+            profiles.add(p);
+        }
+        return profiles;
+    }
+
+    private void addPositionsToProfile(JsonNode currentNode, Profile p) throws InvalidClubPosition {
+        JsonNode positionsJson = currentNode.at("/positions");
+        for (int j = 0 ; j < positionsJson.size(); j++) {
+            Position po = new Position(positionsJson.get(j).at("/id").textValue(),
+                    ClubPosition.of(positionsJson.get(j).at("/clubPosition").textValue()),
+                    positionsJson.get(j).at("/club").textValue(),
+                    LocalDate.parse(positionsJson.get(j).at("/dateStarted").textValue(), DateTimeFormatter.ofPattern("yyyy/MM/d")).atStartOfDay(),
+                    LocalDate.parse(positionsJson.get(j).at("/dateEnded").textValue(), DateTimeFormatter.ofPattern("yyyy/MM/d")).atStartOfDay());
+            System.out.println(po);
+            p.addPosition(po);
+        }
+    }
+
+    private void addAwardsAcheivedToProfile(JsonNode currentNode, Profile p) {
+        JsonNode awardsAchievedJson = currentNode.at("/awardsAchieved");
+        for (int j = 0 ; j < awardsAchievedJson.size(); j++) {
+            AwardAchieved a = new AwardAchieved(awardsAchievedJson.get(j).at("/id").textValue(),
+                    awardsAchievedJson.get(j).at("/description").textValue(),
+                    LocalDate.parse(awardsAchievedJson.get(j).at("/dateAchieved").textValue(), DateTimeFormatter.ofPattern("yyyy/MM/d")).atStartOfDay());
+            p.addAwardAchieved(a);
+        }
+    }
+
+    private Profile parseProfileJson(JsonNode currentNode) {
+        return new Profile(currentNode.path("id").textValue(),
+                        new PersonalInfo(currentNode.at("/personalInfo/fullname").textValue(),
+                                currentNode.at("/personalInfo/cell").textValue(),
+                                currentNode.at("/personalInfo/email").textValue()));
+    }
+
 }
