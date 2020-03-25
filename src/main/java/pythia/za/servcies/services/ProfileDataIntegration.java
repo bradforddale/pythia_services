@@ -80,6 +80,14 @@ public class ProfileDataIntegration {
         ResponseEntity responseEntity = post(PROFILES_URL, restRequest(new DataRequest("create", newProfile)));
     }
 
+    public void update(Profile updatedProfile) {
+        ResponseEntity responseEntity = post(PROFILES_URL, restRequest(new DataRequest("update", updatedProfile)));
+    }
+
+    public void delete(String id) {
+        ResponseEntity responseEntity = post(PROFILES_URL, restRequest(new DataRequest("delete", id)));
+    }
+
     private JsonNode readJsonFromString(String jsonString) throws JsonProcessingException {
         return (new ObjectMapper()).readTree(jsonString);
     }
