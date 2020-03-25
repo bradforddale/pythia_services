@@ -26,7 +26,8 @@ public class ProfileServices {
 
     public Profile getProfile(String id) throws ProfileNotFoundException, ProfileIdNotValidException {
         if (this.validateProfileId(id)) {
-            return profileRepo.get(id);
+            return profileDataIntegration.get(id);
+//            return profileRepo.get(id);
         } else {
             throw new ProfileIdNotValidException("Profile id " + id + " is invalid");
         }

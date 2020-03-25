@@ -25,16 +25,12 @@ public class DataRequest<T> {
     @Override
     public String toString() {
         return  this.toJSON();
-        //        return "DataRequest{" +
-//                "operation='" + operation + '\'' +
-//                ", requestObj=" + requestObj +
-//                '}';
     }
 
     private String toJSON() {
         return "{" +
                 "\"operation\":\"" + operation + '\"' +
-                ", \"requestObj\":" + requestObj +
+                ", \"requestObj\":" + (requestObj instanceof String ? "\"" + requestObj + "\"" : requestObj)  +
                 '}';
     }
 }

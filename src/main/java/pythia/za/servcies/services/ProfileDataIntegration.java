@@ -3,10 +3,7 @@ package pythia.za.servcies.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import pythia.za.servcies.models.InvalidClubPosition;
@@ -28,36 +25,82 @@ public class ProfileDataIntegration {
     }
 
     private ResponseEntity post(String url, HttpEntity<String> request) {
+        System.out.println(request);
         return (new RestTemplate()).postForEntity(url, request, String.class);
     }
 
     public List<Profile> getAll() {
-        ResponseEntity  responseEntity = post(PROFILES_URL,restRequest( new DataRequest<Profile>("getAll", null)));
-        System.out.println(responseEntity.getStatusCode());
-        List<Profile> profiles = new ArrayList<>();
         try {
-//            TODO Needs some excpetion handling code
-            JsonNode responseJson = (new ObjectMapper()).readTree((String)responseEntity.getBody());
-            profiles = successfulResults(responseJson);
+            ResponseEntity  responseEntity = post(PROFILES_URL,restRequest( new DataRequest<Profile>("getAll", null)));
+            if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                JsonNode responseJson = readJsonFromString((String)responseEntity.getBody());
+                return createProfiles(responseJson);
+            } else {
+                System.out.println("An error occurred with Pythia Data: " + responseEntity.toString());
+                return new ArrayList<Profile>();
+            }
         } catch (JsonProcessingException e) {
+            System.out.println("JsonProcessingException occurred:");
             e.printStackTrace();
         } catch (InvalidClubPosition invalidClubPosition) {
+            System.out.println("InvalidClubPosition occurred:");
             invalidClubPosition.printStackTrace();
+        } catch (RuntimeException re) {
+            System.out.println("RuntimeException occurred:");
+            re.printStackTrace();
+        }
+        return new ArrayList<Profile>();
+    }
+
+    public Profile get(String id) {
+        try {
+            ResponseEntity responseEntity = post(PROFILES_URL, restRequest(new DataRequest("get", id)));
+            if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                JsonNode responseJson = readJsonFromString((String)responseEntity.getBody());
+                JsonNode resultJson = readJsonFromString(responseJson.at("/result").textValue());
+                return createProfile(resultJson);
+            } else {
+                System.out.println("An error occurred with Pythia Data: " + responseEntity.toString());
+                return new Profile();
+            }
+        } catch (JsonProcessingException e) {
+            System.out.println("JsonProcessingException occurred:");
+            e.printStackTrace();
+        } catch (InvalidClubPosition invalidClubPosition) {
+            System.out.println("InvalidClubPosition occurred:");
+            invalidClubPosition.printStackTrace();
+        } catch (RuntimeException re) {
+            System.out.println("RuntimeException occurred:");
+            re.printStackTrace();
+        }
+        return new Profile();
+    }
+
+    private JsonNode readJsonFromString(String jsonString) throws JsonProcessingException {
+        return (new ObjectMapper()).readTree(jsonString);
+    }
+
+    private List<Profile> createProfiles(JsonNode responseJson) throws JsonProcessingException, InvalidClubPosition {
+        List<Profile> profiles = new ArrayList<>();
+        JsonNode resultJson = (new ObjectMapper()).readTree(responseJson.at("/result").textValue());
+        for (int i = 0; i < resultJson.size(); i++) {
+            profiles.add(createProfile(resultJson.get(i)));
         }
         return profiles;
     }
 
-    private List<Profile> successfulResults(JsonNode responseJson) throws JsonProcessingException, InvalidClubPosition {
-        List<Profile> profiles = new ArrayList<>();
-        JsonNode resultJson = (new ObjectMapper()).readTree(responseJson.at("/result").textValue());
-        for (int i = 0; i < resultJson.size(); i++) {
-            JsonNode currentNode = resultJson.get(i);
-            Profile p = parseProfileJson(currentNode);
-            addAwardsAcheivedToProfile(currentNode, p);
-            addPositionsToProfile(currentNode, p);
-            profiles.add(p);
-        }
-        return profiles;
+    private Profile createProfile(JsonNode currentNode) throws InvalidClubPosition {
+        Profile p = createInitialProfileFromRootJson(currentNode);
+        addAwardsAchievedToProfile(currentNode, p);
+        addPositionsToProfile(currentNode, p);
+        return p;
+    }
+
+    private Profile createInitialProfileFromRootJson(JsonNode currentNode) {
+        return new Profile(currentNode.path("id").textValue(),
+                new PersonalInfo(currentNode.at("/personalInfo/fullname").textValue(),
+                        currentNode.at("/personalInfo/cell").textValue(),
+                        currentNode.at("/personalInfo/email").textValue()));
     }
 
     private void addPositionsToProfile(JsonNode currentNode, Profile p) throws InvalidClubPosition {
@@ -68,12 +111,11 @@ public class ProfileDataIntegration {
                     positionsJson.get(j).at("/club").textValue(),
                     LocalDate.parse(positionsJson.get(j).at("/dateStarted").textValue(), DateTimeFormatter.ofPattern("yyyy/MM/d")).atStartOfDay(),
                     LocalDate.parse(positionsJson.get(j).at("/dateEnded").textValue(), DateTimeFormatter.ofPattern("yyyy/MM/d")).atStartOfDay());
-            System.out.println(po);
             p.addPosition(po);
         }
     }
 
-    private void addAwardsAcheivedToProfile(JsonNode currentNode, Profile p) {
+    private void addAwardsAchievedToProfile(JsonNode currentNode, Profile p) {
         JsonNode awardsAchievedJson = currentNode.at("/awardsAchieved");
         for (int j = 0 ; j < awardsAchievedJson.size(); j++) {
             AwardAchieved a = new AwardAchieved(awardsAchievedJson.get(j).at("/id").textValue(),
@@ -82,12 +124,4 @@ public class ProfileDataIntegration {
             p.addAwardAchieved(a);
         }
     }
-
-    private Profile parseProfileJson(JsonNode currentNode) {
-        return new Profile(currentNode.path("id").textValue(),
-                        new PersonalInfo(currentNode.at("/personalInfo/fullname").textValue(),
-                                currentNode.at("/personalInfo/cell").textValue(),
-                                currentNode.at("/personalInfo/email").textValue()));
-    }
-
 }

@@ -9,9 +9,9 @@ import java.util.UUID;
 
 public class Profile {
     private String id;
+    private PersonalInfo personalInfo;
     private ArrayList<AwardAchieved> awardsAchieved;
     private ArrayList<Position> positions;
-    private PersonalInfo personalInfo;
 
     public Profile() {
         this.id = generateId();
@@ -88,9 +88,9 @@ public class Profile {
     public String toString() {
         return "Profile{" +
                 "id='" + id + '\'' +
+                ", personalInfo=" + personalInfo +
                 ", awardsAchieved=" + awardsAchieved +
                 ", positions=" + positions +
-                ", personalInfo=" + personalInfo +
                 '}';
     }
 
