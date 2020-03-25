@@ -35,7 +35,7 @@ public class ProfileServices {
 
     public MessageResponse createProfile(NewProfileRequest newProfileRequest) {
         Profile newProfile = new Profile(newProfileRequest);
-        profileRepo.add(newProfile);
+        profileDataIntegration.create(newProfile);
         return new MessageResponse("Profile created with id " + newProfile.getId());
     }
 
