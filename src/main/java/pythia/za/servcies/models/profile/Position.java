@@ -36,11 +36,16 @@ public class Position {
 
     @Override
     public String toString() {
-        return "Position{" +
-                "clubPosition=" + clubPosition +
-                ", club='" + club + '\'' +
-                ", dateStarted=" + dateStarted +
-                ", dateEnded=" + dateEnded +
+        return toJSON();
+    }
+
+    private String toJSON() {
+        return "{" +
+                "\"id\":\"" + id + '\"' +
+                ", \"clubPosition\":\"" + clubPosition + '\"' +
+                ", \"club\":\"" + club + '\"' +
+                ", \"dateStarted\":\"" + dateStarted + '\"' +
+                ", \"dateEnded\":\"" + dateEnded + '\"' +
                 '}';
     }
 }

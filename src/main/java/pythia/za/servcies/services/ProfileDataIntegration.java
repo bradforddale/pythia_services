@@ -34,7 +34,7 @@ public class ProfileDataIntegration {
             ResponseEntity  responseEntity = post(PROFILES_URL,restRequest( new DataRequest<Profile>("getAll", null)));
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 JsonNode responseJson = readJsonFromString((String)responseEntity.getBody());
-                return createProfiles(responseJson);
+                return convertProfileList(responseJson);
             } else {
                 System.out.println("An error occurred with Pythia Data: " + responseEntity.toString());
                 return new ArrayList<Profile>();
@@ -58,7 +58,7 @@ public class ProfileDataIntegration {
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 JsonNode responseJson = readJsonFromString((String)responseEntity.getBody());
                 JsonNode resultJson = readJsonFromString(responseJson.at("/result").textValue());
-                return createProfile(resultJson);
+                return convertProfile(resultJson);
             } else {
                 System.out.println("An error occurred with Pythia Data: " + responseEntity.toString());
                 return new Profile();
@@ -76,20 +76,24 @@ public class ProfileDataIntegration {
         return new Profile();
     }
 
+    public void create(Profile newProfile) {
+        ResponseEntity responseEntity = post(PROFILES_URL, restRequest(new DataRequest("create", newProfile)));
+    }
+
     private JsonNode readJsonFromString(String jsonString) throws JsonProcessingException {
         return (new ObjectMapper()).readTree(jsonString);
     }
 
-    private List<Profile> createProfiles(JsonNode responseJson) throws JsonProcessingException, InvalidClubPosition {
+    private List<Profile> convertProfileList(JsonNode responseJson) throws JsonProcessingException, InvalidClubPosition {
         List<Profile> profiles = new ArrayList<>();
         JsonNode resultJson = (new ObjectMapper()).readTree(responseJson.at("/result").textValue());
         for (int i = 0; i < resultJson.size(); i++) {
-            profiles.add(createProfile(resultJson.get(i)));
+            profiles.add(convertProfile(resultJson.get(i)));
         }
         return profiles;
     }
 
-    private Profile createProfile(JsonNode currentNode) throws InvalidClubPosition {
+    private Profile convertProfile(JsonNode currentNode) throws InvalidClubPosition {
         Profile p = createInitialProfileFromRootJson(currentNode);
         addAwardsAchievedToProfile(currentNode, p);
         addPositionsToProfile(currentNode, p);

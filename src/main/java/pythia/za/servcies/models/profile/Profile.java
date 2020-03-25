@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import pythia.za.servcies.models.NewProfileRequest;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -86,20 +87,16 @@ public class Profile {
 
     @Override
     public String toString() {
-        return "Profile{" +
-                "id='" + id + '\'' +
-                ", personalInfo=" + personalInfo +
-                ", awardsAchieved=" + awardsAchieved +
-                ", positions=" + positions +
-                '}';
+        return toJSON();
     }
 
-    //    @Override
-//    public boolean equals(Object o) {
-//        try {
-//            return this.equals((Profile) o);
-//        } finally
-//        }
-//    }
+    private String toJSON() {
+        return "{" +
+                "\"id\":\"" + id + '\"' +
+                ", \"personalInfo\":" + personalInfo +
+                ", \"awardsAchieved\":" + awardsAchieved +
+                ", \"positions\":" + positions +
+                '}';
+    }
 
 }

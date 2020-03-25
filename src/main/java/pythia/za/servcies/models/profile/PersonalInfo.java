@@ -32,10 +32,14 @@ public class PersonalInfo {
 
     @Override
     public String toString() {
-        return "PersonalInfo{" +
-                "fullname='" + fullname + '\'' +
-                ", cell='" + cell + '\'' +
-                ", email='" + email + '\'' +
+        return toJSON();
+    }
+
+    private String toJSON() {
+        return "{" +
+                "\"fullname\":\"" + fullname + '\"' +
+                ", \"cell\":\"" + cell + '\"' +
+                ", \"email\":\"" + email + '\"' +
                 '}';
     }
 }

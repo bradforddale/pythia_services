@@ -25,10 +25,14 @@ public class AwardAchieved {
 
     @Override
     public String toString() {
-        return "AwardAchieved{" +
-                "id='" + id + '\'' +
-                ", description='" + description + '\'' +
-                ", dateAchieved=" + dateAchieved +
+        return toJSON();
+    }
+
+    private String toJSON() {
+        return "{" +
+                "\"id\":\"" + id + '\"' +
+                ", \"description\":\"" + description + '\"' +
+                ", \"dateAchieved\":\"" + dateAchieved + '\"' +
                 '}';
     }
 }
